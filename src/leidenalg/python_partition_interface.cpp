@@ -2,15 +2,25 @@
 
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes)
 {
-  return create_graph_from_py(py_obj_graph, py_node_sizes, NULL, true, false);
+  return create_graph_from_py(py_obj_graph, py_node_sizes, NULL, NULL, true, false);
 }
 
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights)
 {
-  return create_graph_from_py(py_obj_graph, py_node_sizes, py_weights, true, false);
+  return create_graph_from_py(py_obj_graph, py_node_sizes, py_weights, NULL, true, false);
+}
+
+Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, PyObject* py_node_attributes)
+{
+  return create_graph_from_py(py_obj_graph, py_node_sizes, py_weights, py_node_attributes, true, false);
 }
 
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, bool check_positive_weight, bool correct_self_loops)
+{
+  return create_graph_from_py(py_obj_graph, py_node_sizes, py_weights, check_positive_weight, correct_self_loops);
+}
+
+Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, PyObject* py_node_attributes, bool check_positive_weight, bool correct_self_loops)
 {
   #ifdef DEBUG
     cerr << "create_graph_from_py" << endl;
@@ -32,6 +42,7 @@ Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyO
 
   vector<double> node_sizes;
   vector<double> weights;
+  vector<vector<double> > node_attributes;
   if (py_node_sizes != NULL && py_node_sizes != Py_None)
   {
     #ifdef DEBUG
@@ -96,7 +107,55 @@ Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyO
         throw Exception("Cannot accept infinite weights.");
     }
   }
+  if (py_node_attributes != NULL && py_node_attributes != Py_None)
+  {
+    #ifdef DEBUG
+      cerr << "Reading node_attributes." << endl;
+    #endif
 
+    size_t nb_node_size = PyList_Size(py_node_attributes);
+    if (nb_node_size != n)
+    {
+      throw Exception("Node attribute vector not the same size as the number of nodes.");
+    }
+    node_attributes.resize(n);
+    for (size_t v = 0; v < n; v++)
+    {
+      PyObject* py_node_attributes_vector = PyList_GetItem(py_node_attributes, v);
+      if (PyList_Check(py_node_attributes_vector))
+      {
+        size_t nb_node_attributes = PyList_Size(py_node_attributes_vector);
+        node_attributes[v].resize(nb_node_attributes);
+        for (size_t f = 0; f < nb_node_attributes; f++)
+        {
+          PyObject* py_item = PyList_GetItem(py_node_attributes_vector, f);
+          double a = PyFloat_AsDouble(py_item);
+          node_attributes[v][f] = a;
+        }
+
+        if (v > 1 && node_attributes[v].size() != node_attributes[v-1].size()) 
+        {
+          throw Exception("Node features vectors not of uniform length.");
+        }
+      }
+      else
+      {
+        throw Exception("Expected list values for node attributes vector.");
+      }
+    }
+
+    #ifdef DEBUG
+        cerr << "Created attributes vector of size " << node_attributes.size() << ", confirming attributes" << endl; 
+        for (size_t v = 0; v < n; v++) 
+        {
+          cerr << "Read attributes for node " << v << ": "; 
+          for (double feature : node_attributes[v]) {
+            cerr << feature << ", ";
+          }
+          cerr << endl;
+        }
+    #endif
+  }
   if (node_sizes.size() == n)
   {
     if (weights.size() == m)
@@ -109,7 +168,12 @@ Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyO
     if (weights.size() == m)
       graph = Graph::GraphFromEdgeWeights(py_graph, weights, correct_self_loops);
     else
-      graph = new Graph(py_graph, correct_self_loops);
+    {
+      if (node_attributes.size() == n)
+        graph = Graph::GraphFromNodeAttributes(py_graph, node_attributes, correct_self_loops);
+      else
+        graph = new Graph(py_graph, correct_self_loops);
+    }
   }
 
   #ifdef DEBUG
@@ -448,6 +512,55 @@ extern "C"
       return py_partition;
     }
     catch (std::exception const & e )
+    {
+      string s = "Could not construct partition: " + string(e.what());
+      PyErr_SetString(PyExc_BaseException, s.c_str());
+      return NULL;
+    }
+  }
+
+  PyObject* _new_ContiguousConstrainedVertexPartition(PyObject *self, PyObject *args, PyObject *keywds)
+  {
+    PyObject* py_obj_graph = NULL;
+    PyObject* py_initial_membership = NULL;
+    PyObject* py_weights = NULL;
+    PyObject* py_node_attributes = NULL;
+    double resolution_parameter = 1.0;
+ 
+    static const char* kwlist[] = {"graph", "node_attributes", "resolution_parameter", "initial_membership", "weights", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "OOd|OO", (char**) kwlist,
+                                     &py_obj_graph, &py_node_attributes, &resolution_parameter, &py_initial_membership, &py_weights))
+        return NULL;
+
+    try
+    {
+
+      Graph* graph = create_graph_from_py(py_obj_graph, NULL, py_weights, py_node_attributes);
+
+      ContiguousConstrainedVertexPartition* partition = NULL;
+
+      // If necessary create an initial partition
+      if (py_initial_membership != NULL && py_initial_membership != Py_None)
+      {
+        vector<size_t> initial_membership = create_size_t_vector(py_initial_membership);
+
+        partition = new ContiguousConstrainedVertexPartition(graph, initial_membership, resolution_parameter);
+      }
+      else
+        partition = new ContiguousConstrainedVertexPartition(graph, resolution_parameter);
+
+      // Do *NOT* forget to remove the graph upon deletion
+      partition->destructor_delete_graph = true;
+
+      PyObject* py_partition = capsule_MutableVertexPartition(partition);
+      #ifdef DEBUG
+        cerr << "Created capsule partition at address " << py_partition << endl;
+      #endif
+
+      return py_partition;
+    }
+    catch (std::exception& e )
     {
       string s = "Could not construct partition: " + string(e.what());
       PyErr_SetString(PyExc_BaseException, s.c_str());
