@@ -17,7 +17,7 @@ Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyO
 
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, bool check_positive_weight, bool correct_self_loops)
 {
-  return create_graph_from_py(py_obj_graph, py_node_sizes, py_weights, check_positive_weight, correct_self_loops);
+  return create_graph_from_py(py_obj_graph, py_node_sizes, py_weights, NULL, check_positive_weight, correct_self_loops);
 }
 
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, PyObject* py_node_attributes, bool check_positive_weight, bool correct_self_loops)
@@ -526,11 +526,12 @@ extern "C"
     PyObject* py_weights = NULL;
     PyObject* py_node_attributes = NULL;
     double resolution_parameter = 1.0;
+    double disconnect_penalty = 0;
  
-    static const char* kwlist[] = {"graph", "node_attributes", "resolution_parameter", "initial_membership", "weights", NULL};
+    static const char* kwlist[] = {"graph", "node_attributes", "resolution_parameter", "disconnect_penalty","initial_membership", "weights", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "OOd|OO", (char**) kwlist,
-                                     &py_obj_graph, &py_node_attributes, &resolution_parameter, &py_initial_membership, &py_weights))
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "OOd|dOO", (char**) kwlist,
+                                     &py_obj_graph, &py_node_attributes, &resolution_parameter, &disconnect_penalty, &py_initial_membership, &py_weights))
         return NULL;
 
     try
@@ -545,10 +546,10 @@ extern "C"
       {
         vector<size_t> initial_membership = create_size_t_vector(py_initial_membership);
 
-        partition = new ContiguousConstrainedVertexPartition(graph, initial_membership, resolution_parameter);
+        partition = new ContiguousConstrainedVertexPartition(graph, initial_membership, resolution_parameter, disconnect_penalty);
       }
       else
-        partition = new ContiguousConstrainedVertexPartition(graph, resolution_parameter);
+        partition = new ContiguousConstrainedVertexPartition(graph, resolution_parameter, disconnect_penalty);
 
       // Do *NOT* forget to remove the graph upon deletion
       partition->destructor_delete_graph = true;

@@ -8,6 +8,7 @@
 #include <libleidenalg/SignificanceVertexPartition.h>
 #include <libleidenalg/SurpriseVertexPartition.h>
 #include <libleidenalg/RBConfigurationVertexPartition.h>
+#include <libleidenalg/ContiguousConstrainedVertexPartition.h>
 #include <libleidenalg/RBERVertexPartition.h>
 #include <libleidenalg/CPMVertexPartition.h>
 #include <libleidenalg/Optimiser.h>
