@@ -1,6 +1,11 @@
 leidenalg
 ==============
 
+CHANGES ON THIS FORK
+--------------
+This fork includes the Python API for a partitioning method augmented by a 2D feature vector. 
+
+--------------
 This package implements the Leiden algorithm in ``C++`` and exposes it to
 ``python``.  It relies on ``(python-)igraph`` for it to function. Besides the
 relative flexibility of the implementation, it also scales well, and can be run

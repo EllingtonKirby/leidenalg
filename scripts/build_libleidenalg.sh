@@ -15,15 +15,15 @@ if [ ! -d "libleidenalg" ]; then
   echo ""
   echo "Cloning libleidenalg into ${ROOT_DIR}/build-deps/src/libleidenalg"
   # Clone repository if it does not exist yet
-  git clone --branch ${LIBLEIDENALG_VERSION} https://github.com/vtraag/libleidenalg.git --single-branch
+  git clone --branch main https://github.com/EllingtonKirby/libleidenalg.git --single-branch
 fi
 
 # Make sure the git repository points to the correct version
-echo ""
-echo "Checking out ${LIBLEIDENALG_VERSION} in ${ROOT_DIR}/build-deps/src/libleidenalg"
-cd ${ROOT_DIR}/build-deps/src/libleidenalg
-git fetch origin tag ${LIBLEIDENALG_VERSION} --no-tags
-git checkout ${LIBLEIDENALG_VERSION}
+# echo ""
+# echo "Checking out ${LIBLEIDENALG_VERSION} in ${ROOT_DIR}/build-deps/src/libleidenalg"
+# cd ${ROOT_DIR}/build-deps/src/libleidenalg
+# git fetch origin tag ${LIBLEIDENALG_VERSION} --no-tags
+# git checkout ${LIBLEIDENALG_VERSION}
 
 # Make build directory
 if [ ! -d "${ROOT_DIR}/build-deps/build/libleidenalg" ]; then

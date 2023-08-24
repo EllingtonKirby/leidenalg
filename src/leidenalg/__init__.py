@@ -50,6 +50,7 @@ from .Optimiser import Optimiser
 from .VertexPartition import ModularityVertexPartition
 from .VertexPartition import SurpriseVertexPartition
 from .VertexPartition import SignificanceVertexPartition
+from .VertexPartition import ContiguousConstrainedVertexPartition
 from .VertexPartition import RBERVertexPartition
 from .VertexPartition import RBConfigurationVertexPartition
 from .VertexPartition import CPMVertexPartition

@@ -8,6 +8,7 @@
 #include <libleidenalg/SignificanceVertexPartition.h>
 #include <libleidenalg/SurpriseVertexPartition.h>
 #include <libleidenalg/RBConfigurationVertexPartition.h>
+#include <libleidenalg/ContiguousConstrainedVertexPartition.h>
 #include <libleidenalg/RBERVertexPartition.h>
 #include <libleidenalg/CPMVertexPartition.h>
 #include <libleidenalg/Optimiser.h>
@@ -25,7 +26,9 @@ MutableVertexPartition* create_partition_from_py(PyObject* py_obj_graph, char* m
 
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes);
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights);
+Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, PyObject* py_node_attributes);
 Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, bool check_positive_weight, bool correct_self_loops);
+Graph* create_graph_from_py(PyObject* py_obj_graph, PyObject* py_node_sizes, PyObject* py_weights, PyObject* py_node_attributes, bool check_positive_weight, bool correct_self_loops);
 
 vector<size_t> create_size_t_vector(PyObject* py_list);
 
@@ -44,6 +47,7 @@ extern "C"
   PyObject* _new_CPMVertexPartition(PyObject *self, PyObject *args, PyObject *keywds);
   PyObject* _new_RBERVertexPartition(PyObject *self, PyObject *args, PyObject *keywds);
   PyObject* _new_RBConfigurationVertexPartition(PyObject *self, PyObject *args, PyObject *keywds);
+  PyObject* _new_ContiguousConstrainedVertexPartition(PyObject *self, PyObject *args, PyObject *keywds);
 
   PyObject* _MutableVertexPartition_diff_move(PyObject *self, PyObject *args, PyObject *keywds);
   PyObject* _MutableVertexPartition_move_node(PyObject *self, PyObject *args, PyObject *keywds);

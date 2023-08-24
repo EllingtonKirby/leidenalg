@@ -10,6 +10,7 @@
 #include <libleidenalg/RBConfigurationVertexPartition.h>
 #include <libleidenalg/RBERVertexPartition.h>
 #include <libleidenalg/CPMVertexPartition.h>
+#include <libleidenalg/ContiguousConstrainedVertexPartition.h>
 #include <libleidenalg/Optimiser.h>
 
 #include "python_partition_interface.h"
@@ -30,6 +31,7 @@ extern "C"
       {"_new_CPMVertexPartition",                                   (PyCFunction)_new_CPMVertexPartition,                                   METH_VARARGS | METH_KEYWORDS, ""},
       {"_new_RBERVertexPartition",                                  (PyCFunction)_new_RBERVertexPartition,                                  METH_VARARGS | METH_KEYWORDS, ""},
       {"_new_RBConfigurationVertexPartition",                       (PyCFunction)_new_RBConfigurationVertexPartition,                       METH_VARARGS | METH_KEYWORDS, ""},
+      {"_new_ContiguousConstrainedVertexPartition",                 (PyCFunction)_new_ContiguousConstrainedVertexPartition,                 METH_VARARGS | METH_KEYWORDS, ""},
 
       {"_MutableVertexPartition_diff_move",                         (PyCFunction)_MutableVertexPartition_diff_move,                         METH_VARARGS | METH_KEYWORDS, ""},
       {"_MutableVertexPartition_move_node",                         (PyCFunction)_MutableVertexPartition_move_node,                         METH_VARARGS | METH_KEYWORDS, ""},

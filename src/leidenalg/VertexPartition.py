@@ -946,6 +946,48 @@ class CPMVertexPartition(LinearResolutionParameterVertexPartition):
     n, directed, edges, weights, node_sizes = _c_leiden._MutableVertexPartition_get_py_igraph(self._partition)
     new_partition = CPMVertexPartition(self.graph, self.membership, weights, node_sizes, self.resolution_parameter)
     return new_partition
+  
+class ContiguousConstrainedVertexPartition(LinearResolutionParameterVertexPartition):
+
+  def __init__(self, graph, node_attributes, resolution_parameter, disconnect_penalty, initial_membership=None, weights=None):
+    """
+    Parameters
+    ----------
+    graph : :class:`ig.Graph`
+      Graph to define the partition on.
+
+    initial_membership : list of int
+      Initial membership for the partition. If :obj:`None` then defaults to a
+      singleton partition.
+
+    weights : list of double, or edge attribute
+      Weights of edges. Can be either an iterable or an edge attribute.
+
+    resolution_parameter : double
+      Resolution parameter.
+    """
+    if initial_membership is not None:
+      initial_membership = list(initial_membership)
+
+    super(ContiguousConstrainedVertexPartition, self).__init__(graph, initial_membership)
+
+    pygraph_t = _get_py_capsule(graph)
+
+    if weights is not None:
+      if isinstance(weights, str):
+        weights = graph.es[weights]
+      else:
+        # Make sure it is a list
+        weights = list(weights)
+
+    self._partition = _c_leiden._new_ContiguousConstrainedVertexPartition(pygraph_t,
+      node_attributes, resolution_parameter, disconnect_penalty, initial_membership, weights)
+    self._update_internal_membership()
+
+  def __deepcopy__(self, memo):
+    n, directed, edges, weights, node_sizes = _c_leiden._MutableVertexPartition_get_py_igraph(self._partition)
+    new_partition = ContiguousConstrainedVertexPartition(self.graph, self.node_attributes, self.resolution_parameter, self.membership, weights, )
+    return new_partition
 
   @classmethod
   def Bipartite(cls, graph, resolution_parameter_01,
